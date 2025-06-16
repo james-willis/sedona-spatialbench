@@ -40,9 +40,8 @@ mod lineitem;
 mod nation;
 mod order;
 mod part;
-mod partsupp;
 mod region;
-mod supplier;
+mod driver;
 
 use arrow::array::RecordBatch;
 use arrow::datatypes::SchemaRef;
@@ -51,9 +50,8 @@ pub use lineitem::LineItemArrow;
 pub use nation::NationArrow;
 pub use order::OrderArrow;
 pub use part::PartArrow;
-pub use partsupp::PartSuppArrow;
 pub use region::RegionArrow;
-pub use supplier::SupplierArrow;
+pub use driver::DriverArrow;
 
 /// Iterator of Arrow [`RecordBatch`] that also knows its schema
 pub trait RecordBatchIterator: Iterator<Item = RecordBatch> + Send {

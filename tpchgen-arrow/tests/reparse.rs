@@ -6,16 +6,16 @@ use arrow::datatypes::SchemaRef;
 use std::io::Write;
 use std::sync::Arc;
 use tpchgen::csv::{
-    CustomerCsv, LineItemCsv, NationCsv, OrderCsv, PartCsv, PartSuppCsv, RegionCsv, SupplierCsv,
+    CustomerCsv, LineItemCsv, NationCsv, OrderCsv, PartCsv, PartSuppCsv, RegionCsv, DriverCsv,
 };
 use tpchgen::generators::{
     Customer, CustomerGenerator, LineItem, LineItemGenerator, Nation, NationGenerator, Order,
     OrderGenerator, Part, PartGenerator, PartSupp, PartSuppGenerator, Region, RegionGenerator,
-    Supplier, SupplierGenerator,
+    Driver, DriverGenerator,
 };
 use tpchgen_arrow::{
-    CustomerArrow, LineItemArrow, NationArrow, OrderArrow, PartArrow, PartSuppArrow,
-    RecordBatchIterator, RegionArrow, SupplierArrow,
+    CustomerArrow, LineItemArrow, NationArrow, OrderArrow, PartArrow,
+    RecordBatchIterator, RegionArrow, DriverArrow,
 };
 
 /// Macro that defines tests for tbl for a given type
@@ -46,12 +46,10 @@ test_row_type!(order_tbl, OrderGenerator, OrderArrow, Test::tbl());
 test_row_type!(order_csv, OrderGenerator, OrderArrow, Test::csv());
 test_row_type!(part_tbl, PartGenerator, PartArrow, Test::tbl());
 test_row_type!(part_csv, PartGenerator, PartArrow, Test::csv());
-test_row_type!(partsupp_tbl, PartSuppGenerator, PartSuppArrow, Test::tbl());
-test_row_type!(partsupp_csv, PartSuppGenerator, PartSuppArrow, Test::csv());
 test_row_type!(region_tbl, RegionGenerator, RegionArrow, Test::tbl());
 test_row_type!(region_csv, RegionGenerator, RegionArrow, Test::csv());
-test_row_type!(supplier_tbl, SupplierGenerator, SupplierArrow, Test::tbl());
-test_row_type!(supplier_csv, SupplierGenerator, SupplierArrow, Test::csv());
+test_row_type!(driver_tbl, DriverGenerator, DriverArrow, Test::tbl());
+test_row_type!(driver_csv, DriverGenerator, DriverArrow, Test::csv());
 
 /// Common trait for writing rows in TBL and CSV format
 trait RowType {
@@ -85,9 +83,8 @@ impl_row_type!(LineItem<'_>, LineItemCsv);
 impl_row_type!(Nation<'_>, NationCsv);
 impl_row_type!(Order<'_>, OrderCsv);
 impl_row_type!(Part<'_>, PartCsv);
-impl_row_type!(PartSupp<'_>, PartSuppCsv);
 impl_row_type!(Region<'_>, RegionCsv);
-impl_row_type!(Supplier, SupplierCsv);
+impl_row_type!(Driver, DriverCsv);
 
 #[derive(Debug, Clone, Copy)]
 #[allow(clippy::upper_case_acronyms)]

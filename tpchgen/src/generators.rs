@@ -599,69 +599,66 @@ impl<'a> Iterator for PartGeneratorIterator<'a> {
     }
 }
 
-/// A supplier name, formatted as `"Supplier#<n>"`
+/// A Driver name, formatted as `"Driver#<n>"`
 #[derive(Debug, Clone, Copy, PartialEq)]
-pub struct SupplierName(i64);
+pub struct DriverName(i64);
 
-impl SupplierName {
-    /// Creates a new SupplierName with the given value
+impl DriverName {
+    /// Creates a new DriverName with the given value
     pub fn new(value: i64) -> Self {
-        SupplierName(value)
+        DriverName(value)
     }
 }
 
-impl fmt::Display for SupplierName {
+impl fmt::Display for DriverName {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "Supplier#{:09}", self.0)
+        write!(f, "Driver#{:09}", self.0)
     }
 }
 
-/// Records for the SUPPLIER table.
+/// Records for the Driver table.
 ///
 /// The Display trait is implemented to format the line item data as a string
 /// in the default TPC-H 'tbl' format.
 ///
 /// ```text
-/// 1|Supplier#000000001| N kD4on9OM Ipw3,gf0JBoQDd7tgrzrddZ|17|27-918-335-1736|5755.94|each slyly above the careful|
-/// 2|Supplier#000000002|89eJ5ksX3ImxJQBvxObC,|5|15-679-861-2259|4032.68| slyly bold instructions. idle dependen|
+/// 1|Driver#000000001| N kD4on9OM Ipw3,gf0JBoQDd7tgrzrddZ|17|27-918-335-1736|5755.94|each slyly above the careful|
+/// 2|Driver#000000002|89eJ5ksX3ImxJQBvxObC,|5|15-679-861-2259|4032.68| slyly bold instructions. idle dependen|
 /// ```
 #[derive(Debug, Clone, PartialEq)]
-pub struct Supplier {
+pub struct Driver {
     /// Primary key
-    pub s_suppkey: i64,
-    /// Supplier name.
-    pub s_name: SupplierName,
-    /// Supplier address
-    pub s_address: RandomAlphaNumericInstance,
-    /// Foreign key to NATION
-    pub s_nationkey: i64,
-    /// Supplier phone number
-    pub s_phone: PhoneNumberInstance,
-    /// Supplier account balance
-    pub s_acctbal: TPCHDecimal,
-    /// Variable length comment
-    pub s_comment: String,
+    pub d_driverkey: i64,
+    /// Driver name.
+    pub d_name: DriverName,
+    /// Driver address
+    pub d_address: RandomAlphaNumericInstance,
+    /// Region name
+    pub d_region: String,
+    /// Nation name
+    pub d_nation: String,
+    /// Driver phone number
+    pub d_phone: PhoneNumberInstance,
 }
 
-impl fmt::Display for Supplier {
+impl fmt::Display for Driver {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
             f,
-            "{}|{}|{}|{}|{}|{}|{}|",
-            self.s_suppkey,
-            self.s_name,
-            self.s_address,
-            self.s_nationkey,
-            self.s_phone,
-            self.s_acctbal,
-            self.s_comment
+            "{}|{}|{}|{}|{}|{}|",
+            self.d_driverkey,
+            self.d_name,
+            self.d_address,
+            self.d_region,
+            self.d_nation,
+            self.d_phone
         )
     }
 }
 
-/// Generator for Supplier table data
+/// Generator for Driver table data
 #[derive(Debug, Clone)]
-pub struct SupplierGenerator<'a> {
+pub struct DriverGenerator<'a> {
     scale_factor: f64,
     part: i32,
     part_count: i32,
@@ -669,11 +666,11 @@ pub struct SupplierGenerator<'a> {
     text_pool: &'a TextPool,
 }
 
-impl<'a> SupplierGenerator<'a> {
-    /// Base scale for supplier generation
+impl<'a> DriverGenerator<'a> {
+    /// Base scale for Driver generation
     const SCALE_BASE: i32 = 10_000;
 
-    // Constants for supplier generation
+    // Constants for Driver generation
     const ACCOUNT_BALANCE_MIN: i32 = -99999;
     const ACCOUNT_BALANCE_MAX: i32 = 999999;
     const ADDRESS_AVERAGE_LENGTH: i32 = 25;
@@ -688,11 +685,11 @@ impl<'a> SupplierGenerator<'a> {
     pub const BBB_COMMENTS_PER_SCALE_BASE: i32 = 10;
     pub const BBB_COMPLAINT_PERCENT: i32 = 50;
 
-    /// Creates a new SupplierGenerator with the given scale factor
+    /// Creates a new DriverGenerator with the given scale factor
     ///
     /// Note the generator's lifetime is `&'static`. See [`NationGenerator`] for
     /// more details.
-    pub fn new(scale_factor: f64, part: i32, part_count: i32) -> SupplierGenerator<'static> {
+    pub fn new(scale_factor: f64, part: i32, part_count: i32) -> DriverGenerator<'static> {
         // Note: use explicit lifetime to ensure this remains `&'static`
         Self::new_with_distributions_and_text_pool(
             scale_factor,
@@ -703,15 +700,15 @@ impl<'a> SupplierGenerator<'a> {
         )
     }
 
-    /// Creates a SupplierGenerator with specified distributions and text pool
+    /// Creates a DriverGenerator with specified distributions and text pool
     pub fn new_with_distributions_and_text_pool<'b>(
         scale_factor: f64,
         part: i32,
         part_count: i32,
         distributions: &'b Distributions,
         text_pool: &'b TextPool,
-    ) -> SupplierGenerator<'b> {
-        SupplierGenerator {
+    ) -> DriverGenerator<'b> {
+        DriverGenerator {
             scale_factor,
             part,
             part_count,
@@ -725,9 +722,9 @@ impl<'a> SupplierGenerator<'a> {
         GenerateUtils::calculate_row_count(Self::SCALE_BASE, scale_factor, part, part_count)
     }
 
-    /// Returns an iterator over the supplier rows
-    pub fn iter(&self) -> SupplierGeneratorIterator<'a> {
-        SupplierGeneratorIterator::new(
+    /// Returns an iterator over the Driver rows
+    pub fn iter(&self) -> DriverGeneratorIterator<'a> {
+        DriverGeneratorIterator::new(
             self.distributions,
             self.text_pool,
             GenerateUtils::calculate_start_index(
@@ -741,18 +738,18 @@ impl<'a> SupplierGenerator<'a> {
     }
 }
 
-impl<'a> IntoIterator for &'a SupplierGenerator<'a> {
-    type Item = Supplier;
-    type IntoIter = SupplierGeneratorIterator<'a>;
+impl<'a> IntoIterator for &'a DriverGenerator<'a> {
+    type Item = Driver;
+    type IntoIter = DriverGeneratorIterator<'a>;
 
     fn into_iter(self) -> Self::IntoIter {
         self.iter()
     }
 }
 
-/// Iterator that generates Supplier rows
+/// Iterator that generates Driver rows
 #[derive(Debug)]
-pub struct SupplierGeneratorIterator<'a> {
+pub struct DriverGeneratorIterator<'a> {
     address_random: RandomAlphaNumeric,
     nation_key_random: RandomBoundedInt,
     phone_random: RandomPhoneNumber,
@@ -763,35 +760,39 @@ pub struct SupplierGeneratorIterator<'a> {
     bbb_offset_random: RowRandomInt,
     bbb_type_random: RandomBoundedInt,
 
+    // Add references to distributions
+    nations: &'a Distribution,
+    regions: &'a Distribution,
+
     start_index: i64,
     row_count: i64,
     index: i64,
 }
 
-impl<'a> SupplierGeneratorIterator<'a> {
+impl<'a> DriverGeneratorIterator<'a> {
     fn new(
-        distributions: &Distributions,
+        distributions: &'a Distributions,
         text_pool: &'a TextPool,
         start_index: i64,
         row_count: i64,
     ) -> Self {
         let mut address_random =
-            RandomAlphaNumeric::new(706178559, SupplierGenerator::ADDRESS_AVERAGE_LENGTH);
+            RandomAlphaNumeric::new(706178559, DriverGenerator::ADDRESS_AVERAGE_LENGTH);
         let mut nation_key_random =
             RandomBoundedInt::new(110356601, 0, (distributions.nations().size() - 1) as i32);
         let mut phone_random = RandomPhoneNumber::new(884434366);
         let mut account_balance_random = RandomBoundedInt::new(
             962338209,
-            SupplierGenerator::ACCOUNT_BALANCE_MIN,
-            SupplierGenerator::ACCOUNT_BALANCE_MAX,
+            DriverGenerator::ACCOUNT_BALANCE_MIN,
+            DriverGenerator::ACCOUNT_BALANCE_MAX,
         );
         let mut comment_random = RandomText::new(
             1341315363,
             text_pool,
-            SupplierGenerator::COMMENT_AVERAGE_LENGTH as f64,
+            DriverGenerator::COMMENT_AVERAGE_LENGTH as f64,
         );
         let mut bbb_comment_random =
-            RandomBoundedInt::new(202794285, 1, SupplierGenerator::SCALE_BASE);
+            RandomBoundedInt::new(202794285, 1, DriverGenerator::SCALE_BASE);
         let mut bbb_junk_random = RowRandomInt::new(263032577, 1);
         let mut bbb_offset_random = RowRandomInt::new(715851524, 1);
         let mut bbb_type_random = RandomBoundedInt::new(753643799, 0, 100);
@@ -807,7 +808,7 @@ impl<'a> SupplierGeneratorIterator<'a> {
         bbb_offset_random.advance_rows(start_index);
         bbb_type_random.advance_rows(start_index);
 
-        SupplierGeneratorIterator {
+        DriverGeneratorIterator {
             address_random,
             nation_key_random,
             phone_random,
@@ -817,79 +818,43 @@ impl<'a> SupplierGeneratorIterator<'a> {
             bbb_junk_random,
             bbb_offset_random,
             bbb_type_random,
+
+            // Initialize the new fields
+            nations: distributions.nations(),
+            regions: distributions.regions(),
+
             start_index,
             row_count,
             index: 0,
         }
     }
 
-    /// Creates a supplier with the given key
-    fn make_supplier(&mut self, supplier_key: i64) -> Supplier {
-        let mut comment = self.comment_random.next_value().to_string();
+    /// Creates a Driver with the given key
+    fn make_driver(&mut self, driver_key: i64) -> Driver {
+        let nation_key = self.nation_key_random.next_value();
+        let nation = self.nations.get_value(nation_key as usize);
+        let region = self.regions.get_value(self.nations.get_weight(nation_key as usize) as usize);
 
-        // Add supplier complaints or commendation to the comment
-        let bbb_comment_random_value = self.bbb_comment_random.next_value();
-        if bbb_comment_random_value <= SupplierGenerator::BBB_COMMENTS_PER_SCALE_BASE {
-            let _buffer = comment.clone();
-
-            // select random place for BBB comment
-            let noise = self.bbb_junk_random.next_int(
-                0,
-                (comment.len() - SupplierGenerator::BBB_COMMENT_LENGTH) as i32,
-            ) as usize;
-            let offset = self.bbb_offset_random.next_int(
-                0,
-                (comment.len() - (SupplierGenerator::BBB_COMMENT_LENGTH + noise)) as i32,
-            ) as usize;
-
-            // select complaint or recommendation
-            let type_text =
-                if self.bbb_type_random.next_value() < SupplierGenerator::BBB_COMPLAINT_PERCENT {
-                    SupplierGenerator::BBB_COMPLAINT_TEXT
-                } else {
-                    SupplierGenerator::BBB_RECOMMEND_TEXT
-                };
-
-            // Create a mutable string that we can modify in chunks
-            let mut modified_comment = String::with_capacity(comment.len());
-            modified_comment.push_str(&comment[..offset]);
-            modified_comment.push_str(SupplierGenerator::BBB_BASE_TEXT);
-            modified_comment.push_str(
-                &comment[offset + SupplierGenerator::BBB_BASE_TEXT.len()
-                    ..offset + SupplierGenerator::BBB_BASE_TEXT.len() + noise],
-            );
-            modified_comment.push_str(type_text);
-            modified_comment.push_str(
-                &comment
-                    [offset + SupplierGenerator::BBB_BASE_TEXT.len() + noise + type_text.len()..],
-            );
-
-            comment = modified_comment;
-        }
-
-        let nation_key = self.nation_key_random.next_value() as i64;
-
-        Supplier {
-            s_suppkey: supplier_key,
-            s_name: SupplierName::new(supplier_key),
-            s_address: self.address_random.next_value(),
-            s_nationkey: nation_key,
-            s_phone: self.phone_random.next_value(nation_key),
-            s_acctbal: TPCHDecimal(self.account_balance_random.next_value() as i64),
-            s_comment: comment,
+        Driver {
+            d_driverkey: driver_key,
+            d_name: DriverName::new(driver_key),
+            d_address: self.address_random.next_value(),
+            d_region: region.to_string(), // Convert &str to String
+            d_nation: nation.to_string(), // Convert &str to String
+            d_phone: self.phone_random.next_value(nation_key as i64),
         }
     }
 }
 
-impl Iterator for SupplierGeneratorIterator<'_> {
-    type Item = Supplier;
+impl Iterator for DriverGeneratorIterator<'_> {
+    type Item = Driver;
 
     fn next(&mut self) -> Option<Self::Item> {
         if self.index >= self.row_count {
             return None;
         }
 
-        let supplier = self.make_supplier(self.start_index + self.index + 1);
+        let driver = self.make_driver(self.start_index + self.index + 1);
 
         self.address_random.row_finished();
         self.nation_key_random.row_finished();
@@ -903,7 +868,7 @@ impl Iterator for SupplierGeneratorIterator<'_> {
 
         self.index += 1;
 
-        Some(supplier)
+        Some(driver)
     }
 }
 
@@ -941,31 +906,25 @@ pub struct Customer<'a> {
     pub c_name: CustomerName,
     /// Customer address
     pub c_address: RandomAlphaNumericInstance,
-    /// Foreign key to NATION
-    pub c_nationkey: i64,
+    /// Region name
+    pub c_region: &'a str,
+    /// Nation name
+    pub c_nation: &'a str,
     /// Customer phone number
     pub c_phone: PhoneNumberInstance,
-    /// Customer account balance
-    pub c_acctbal: TPCHDecimal,
-    /// Customer market segment
-    pub c_mktsegment: &'a str,
-    /// Variable length comment
-    pub c_comment: &'a str,
 }
 
 impl fmt::Display for Customer<'_> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
             f,
-            "{}|{}|{}|{}|{}|{}|{}|{}|",
+            "{}|{}|{}|{}|{}|{}|",
             self.c_custkey,
             self.c_name,
             self.c_address,
-            self.c_nationkey,
+            self.c_region,
+            self.c_nation,
             self.c_phone,
-            self.c_acctbal,
-            self.c_mktsegment,
-            self.c_comment
         )
     }
 }
@@ -1058,13 +1017,12 @@ pub struct CustomerGeneratorIterator<'a> {
     address_random: RandomAlphaNumeric,
     nation_key_random: RandomBoundedInt,
     phone_random: RandomPhoneNumber,
-    account_balance_random: RandomBoundedInt,
-    market_segment_random: RandomString<'a>,
-    comment_random: RandomText<'a>,
 
     start_index: i64,
     row_count: i64,
     index: i64,
+    nations: &'a Distribution,
+    regions: &'a Distribution,
 }
 
 impl<'a> CustomerGeneratorIterator<'a> {
@@ -1102,11 +1060,10 @@ impl<'a> CustomerGeneratorIterator<'a> {
 
         CustomerGeneratorIterator {
             address_random,
-            nation_key_random,
             phone_random,
-            account_balance_random,
-            market_segment_random,
-            comment_random,
+            nation_key_random,
+            regions: distributions.regions(),
+            nations: distributions.nations(),
             start_index,
             row_count,
             index: 0,
@@ -1116,16 +1073,14 @@ impl<'a> CustomerGeneratorIterator<'a> {
     /// Creates a customer with the given key
     fn make_customer(&mut self, customer_key: i64) -> Customer<'a> {
         let nation_key = self.nation_key_random.next_value() as i64;
-
+        let region_key = self.nations.get_weight(nation_key as usize);
         Customer {
             c_custkey: customer_key,
             c_name: CustomerName::new(customer_key),
             c_address: self.address_random.next_value(),
-            c_nationkey: nation_key,
+            c_region: self.regions.get_value(region_key as usize),
+            c_nation: self.nations.get_value(nation_key as usize),
             c_phone: self.phone_random.next_value(nation_key),
-            c_acctbal: TPCHDecimal(self.account_balance_random.next_value() as i64),
-            c_mktsegment: self.market_segment_random.next_value(),
-            c_comment: self.comment_random.next_value(),
         }
     }
 }
@@ -1143,9 +1098,6 @@ impl<'a> Iterator for CustomerGeneratorIterator<'a> {
         self.address_random.row_finished();
         self.nation_key_random.row_finished();
         self.phone_random.row_finished();
-        self.account_balance_random.row_finished();
-        self.market_segment_random.row_finished();
-        self.comment_random.row_finished();
 
         self.index += 1;
 
@@ -1153,7 +1105,7 @@ impl<'a> Iterator for CustomerGeneratorIterator<'a> {
     }
 }
 
-/// The PARTSUPP (part supplier) table
+/// The PARTSUPP (part Driver) table
 ///
 /// The Display trait is implemented to format the line item data as a string
 /// in the default TPC-H 'tbl' format.
@@ -1166,11 +1118,11 @@ impl<'a> Iterator for CustomerGeneratorIterator<'a> {
 pub struct PartSupp<'a> {
     /// Primary key, foreign key to PART
     pub ps_partkey: i64,
-    /// Primary key, foreign key to SUPPLIER
+    /// Primary key, foreign key to Driver
     pub ps_suppkey: i64,
     /// Available quantity
     pub ps_availqty: i32,
-    /// Supplier cost
+    /// Driver cost
     pub ps_supplycost: TPCHDecimal,
     /// Variable length comment
     pub ps_comment: &'a str,
@@ -1196,10 +1148,10 @@ pub struct PartSuppGenerator<'a> {
 }
 
 impl<'a> PartSuppGenerator<'a> {
-    /// Base scale for part-supplier generation
-    const SUPPLIERS_PER_PART: i32 = 4;
+    /// Base scale for part-Driver generation
+    const DriverS_PER_PART: i32 = 4;
 
-    // Constants for part-supplier generation
+    // Constants for part-Driver generation
     const AVAILABLE_QUANTITY_MIN: i32 = 1;
     const AVAILABLE_QUANTITY_MAX: i32 = 9999;
     const SUPPLY_COST_MIN: i32 = 100;
@@ -1246,7 +1198,7 @@ impl<'a> PartSuppGenerator<'a> {
         )
     }
 
-    /// Returns an iterator over the part supplier rows
+    /// Returns an iterator over the part Driver rows
     pub fn iter(&self) -> PartSuppGeneratorIterator<'a> {
         let scale_base = PartGenerator::SCALE_BASE;
 
@@ -1285,7 +1237,7 @@ pub struct PartSuppGeneratorIterator<'a> {
     comment_random: RandomText<'a>,
 
     index: i64,
-    part_supplier_number: i32,
+    part_Driver_number: i32,
 }
 
 impl<'a> PartSuppGeneratorIterator<'a> {
@@ -1294,19 +1246,19 @@ impl<'a> PartSuppGeneratorIterator<'a> {
             1671059989,
             PartSuppGenerator::AVAILABLE_QUANTITY_MIN,
             PartSuppGenerator::AVAILABLE_QUANTITY_MAX,
-            PartSuppGenerator::SUPPLIERS_PER_PART,
+            PartSuppGenerator::DriverS_PER_PART,
         );
         let mut supply_cost_random = RandomBoundedInt::new_with_seeds_per_row(
             1051288424,
             PartSuppGenerator::SUPPLY_COST_MIN,
             PartSuppGenerator::SUPPLY_COST_MAX,
-            PartSuppGenerator::SUPPLIERS_PER_PART,
+            PartSuppGenerator::DriverS_PER_PART,
         );
         let mut comment_random = RandomText::new_with_expected_row_count(
             1961692154,
             text_pool,
             PartSuppGenerator::COMMENT_AVERAGE_LENGTH as f64,
-            PartSuppGenerator::SUPPLIERS_PER_PART,
+            PartSuppGenerator::DriverS_PER_PART,
         );
 
         // Advance all generators to the starting position
@@ -1322,15 +1274,15 @@ impl<'a> PartSuppGeneratorIterator<'a> {
             supply_cost_random,
             comment_random,
             index: 0,
-            part_supplier_number: 0,
+            part_Driver_number: 0,
         }
     }
 
-    /// Creates a part-supplier entry with the given part key
-    fn make_part_supplier(&mut self, part_key: i64) -> PartSupp<'a> {
-        let supplier_key = Self::select_part_supplier(
+    /// Creates a part-Driver entry with the given part key
+    fn make_part_Driver(&mut self, part_key: i64) -> PartSupp<'a> {
+        let Driver_key = Self::select_part_Driver(
             part_key,
-            self.part_supplier_number as i64,
+            self.part_Driver_number as i64,
             self.scale_factor,
         );
 
@@ -1340,23 +1292,23 @@ impl<'a> PartSuppGeneratorIterator<'a> {
 
         PartSupp {
             ps_partkey: part_key,
-            ps_suppkey: supplier_key,
+            ps_suppkey: Driver_key,
             ps_availqty,
             ps_supplycost,
             ps_comment,
         }
     }
 
-    /// Selects a supplier for a given part and supplier number
-    pub fn select_part_supplier(part_key: i64, supplier_number: i64, scale_factor: f64) -> i64 {
-        // Use supplier generator's scale base
-        let supplier_count = (SupplierGenerator::SCALE_BASE as f64 * scale_factor) as i64;
+    /// Selects a Driver for a given part and Driver number
+    pub fn select_part_Driver(part_key: i64, Driver_number: i64, scale_factor: f64) -> i64 {
+        // Use Driver generator's scale base
+        let Driver_count = (DriverGenerator::SCALE_BASE as f64 * scale_factor) as i64;
 
         ((part_key
-            + (supplier_number
-                * ((supplier_count / PartSuppGenerator::SUPPLIERS_PER_PART as i64)
-                    + ((part_key - 1) / supplier_count))))
-            % supplier_count)
+            + (Driver_number
+                * ((Driver_count / PartSuppGenerator::DriverS_PER_PART as i64)
+                    + ((part_key - 1) / Driver_count))))
+            % Driver_count)
             + 1
     }
 }
@@ -1370,20 +1322,20 @@ impl<'a> Iterator for PartSuppGeneratorIterator<'a> {
         }
 
         let part_key = self.start_index + self.index + 1;
-        let part_supplier = self.make_part_supplier(part_key);
-        self.part_supplier_number += 1;
+        let part_Driver = self.make_part_Driver(part_key);
+        self.part_Driver_number += 1;
 
-        // advance next row only when all suppliers for the part have been produced
-        if self.part_supplier_number >= PartSuppGenerator::SUPPLIERS_PER_PART {
+        // advance next row only when all Drivers for the part have been produced
+        if self.part_Driver_number >= PartSuppGenerator::DriverS_PER_PART {
             self.available_quantity_random.row_finished();
             self.supply_cost_random.row_finished();
             self.comment_random.row_finished();
 
             self.index += 1;
-            self.part_supplier_number = 0;
+            self.part_Driver_number = 0;
         }
 
-        Some(part_supplier)
+        Some(part_Driver)
     }
 }
 
@@ -1793,7 +1745,7 @@ pub struct LineItem<'a> {
     pub l_orderkey: i64,
     /// Foreign key to PART
     pub l_partkey: i64,
-    /// Foreign key to SUPPLIER
+    /// Foreign key to Driver
     pub l_suppkey: i64,
     /// Line item number within order
     pub l_linenumber: i32,
@@ -2007,7 +1959,7 @@ pub struct LineItemGeneratorIterator<'a> {
 
     line_part_key_random: RandomBoundedLong,
 
-    supplier_number_random: RandomBoundedInt,
+    Driver_number_random: RandomBoundedInt,
 
     ship_date_random: RandomBoundedInt,
     commit_date_random: RandomBoundedInt,
@@ -2046,7 +1998,7 @@ impl<'a> LineItemGeneratorIterator<'a> {
 
         let mut line_part_key_random = LineItemGenerator::create_part_key_random(scale_factor);
 
-        let mut supplier_number_random = RandomBoundedInt::new_with_seeds_per_row(
+        let mut Driver_number_random = RandomBoundedInt::new_with_seeds_per_row(
             2095021727,
             0,
             3,
@@ -2099,7 +2051,7 @@ impl<'a> LineItemGeneratorIterator<'a> {
 
         line_part_key_random.advance_rows(start_index);
 
-        supplier_number_random.advance_rows(start_index);
+        Driver_number_random.advance_rows(start_index);
 
         ship_date_random.advance_rows(start_index);
         commit_date_random.advance_rows(start_index);
@@ -2122,7 +2074,7 @@ impl<'a> LineItemGeneratorIterator<'a> {
             discount_random,
             tax_random,
             line_part_key_random,
-            supplier_number_random,
+            Driver_number_random,
             ship_date_random,
             commit_date_random,
             receipt_date_random,
@@ -2150,10 +2102,10 @@ impl<'a> LineItemGeneratorIterator<'a> {
 
         let part_key = self.line_part_key_random.next_value();
 
-        let supplier_number = self.supplier_number_random.next_value() as i64;
-        let supplier_key = PartSuppGeneratorIterator::select_part_supplier(
+        let Driver_number = self.Driver_number_random.next_value() as i64;
+        let Driver_key = PartSuppGeneratorIterator::select_part_Driver(
             part_key,
-            supplier_number,
+            Driver_number,
             self.scale_factor,
         );
 
@@ -2186,7 +2138,7 @@ impl<'a> LineItemGeneratorIterator<'a> {
         LineItem {
             l_orderkey: order_key,
             l_partkey: part_key,
-            l_suppkey: supplier_key,
+            l_suppkey: Driver_key,
             l_linenumber: (self.line_number + 1),
             l_quantity: quantity as i64,
             l_extendedprice: TPCHDecimal(extended_price),
@@ -2225,7 +2177,7 @@ impl<'a> Iterator for LineItemGeneratorIterator<'a> {
             self.tax_random.row_finished();
 
             self.line_part_key_random.row_finished();
-            self.supplier_number_random.row_finished();
+            self.Driver_number_random.row_finished();
 
             self.ship_date_random.row_finished();
             self.commit_date_random.row_finished();
@@ -2291,18 +2243,18 @@ mod tests {
     }
 
     #[test]
-    fn test_supplier_generation() {
+    fn test_driver_generation() {
         // Create a generator with a small scale factor
-        let generator = SupplierGenerator::new(0.01, 1, 1);
-        let suppliers: Vec<_> = generator.iter().collect();
+        let generator = DriverGenerator::new(0.01, 1, 1);
+        let drivers: Vec<_> = generator.iter().collect();
 
-        // Should have 0.01 * 10,000 = 100 suppliers
-        assert_eq!(suppliers.len(), 100);
+        // Should have 0.01 * 10,000 = 100 Drivers
+        assert_eq!(drivers.len(), 100);
 
-        // Check first supplier
-        let first = &suppliers[0];
-        assert_eq!(first.s_suppkey, 1);
-        assert_eq!(first.to_string(), "1|Supplier#000000001| N kD4on9OM Ipw3,gf0JBoQDd7tgrzrddZ|17|27-918-335-1736|5755.94|each slyly above the careful|")
+        // Check first Driver
+        let first = &drivers[0];
+        assert_eq!(first.d_driverkey, 1);
+        assert_eq!(first.to_string(), "1|Driver#000000001| N kD4on9OM Ipw3,gf0JBoQDd7tgrzrddZ|AMERICA|PERU|27-918-335-1736|")
     }
 
     #[test]
@@ -2317,90 +2269,92 @@ mod tests {
         // Check first customer
         let first = &customers[0];
         assert_eq!(first.c_custkey, 1);
-        assert_eq!(first.to_string(), "1|Customer#000000001|IVhzIApeRb ot,c,E|15|25-989-741-2988|711.56|BUILDING|to the even, regular platelets. regular, ironic epitaphs nag e|");
+        assert_eq!(first.c_name.to_string(), "Customer#000000001");
+        assert!(first.c_address.to_string().len() > 0);
+        assert!(!first.c_nation.is_empty());
+        assert!(!first.c_region.is_empty());
+        assert!(first.c_phone.to_string().len() > 0);
 
-        // Check market segment distribution
-        let market_segments: std::collections::HashSet<_> =
-            customers.iter().map(|c| &c.c_mktsegment).collect();
-
-        // Should have multiple different market segments
-        assert!(market_segments.len() > 1);
-
-        // Check nation key distribution
-        let nation_keys: std::collections::HashSet<_> =
-            customers.iter().map(|c| c.c_nationkey).collect();
-
-        // Should have multiple different nation keys
-        assert!(nation_keys.len() > 1);
+        // Verify the string format matches the expected pattern
+        let expected_pattern = format!(
+            "{}|{}|{}|{}|{}|{}|",
+            first.c_custkey,
+            first.c_name,
+            first.c_address,
+            first.c_region,
+            first.c_nation,
+            first.c_phone
+        );
+        assert_eq!(first.to_string(), expected_pattern);
     }
 
     #[test]
-    fn test_part_supplier_generation() {
+    fn test_part_Driver_generation() {
         // Create a generator with a small scale factor
         let generator = PartSuppGenerator::new(0.01, 1, 1);
-        let part_suppliers: Vec<_> = generator.iter().collect();
+        let part_Drivers: Vec<_> = generator.iter().collect();
 
-        // Should have 0.01 * 200,000 * 4 = 8,000 part-supplier relationships
-        assert_eq!(part_suppliers.len(), 8000);
+        // Should have 0.01 * 200,000 * 4 = 8,000 part-Driver relationships
+        assert_eq!(part_Drivers.len(), 8000);
 
-        // Each part should have SUPPLIERS_PER_PART suppliers
+        // Each part should have DriverS_PER_PART Drivers
         let part_keys: std::collections::HashSet<_> =
-            part_suppliers.iter().map(|ps| ps.ps_partkey).collect();
+            part_Drivers.iter().map(|ps| ps.ps_partkey).collect();
 
         assert_eq!(part_keys.len(), 2000); // 8,000 / 4 = 2,000 parts
 
-        // Check first part supplier
-        let first = &part_suppliers[0];
+        // Check first part Driver
+        let first = &part_Drivers[0];
         assert_eq!(first.ps_partkey, 1);
-        assert_ne!(first.ps_suppkey, 0); // Should have a valid supplier key
+        assert_ne!(first.ps_suppkey, 0); // Should have a valid Driver key
         assert!(first.ps_availqty > 0);
         assert!(first.ps_supplycost > TPCHDecimal::ZERO);
         assert!(!first.ps_comment.is_empty());
 
-        // Verify supplier distribution
-        let suppliers_for_first_part: Vec<_> = part_suppliers
+        // Verify Driver distribution
+        let Drivers_for_first_part: Vec<_> = part_Drivers
             .iter()
             .filter(|ps| ps.ps_partkey == 1)
             .map(|ps| ps.ps_suppkey)
             .collect();
 
         assert_eq!(
-            suppliers_for_first_part.len(),
-            PartSuppGenerator::SUPPLIERS_PER_PART as usize
+            Drivers_for_first_part.len(),
+            PartSuppGenerator::DriverS_PER_PART as usize
         );
 
-        // Supplier keys should be unique for each part
-        let unique_suppliers: std::collections::HashSet<_> =
-            suppliers_for_first_part.iter().collect();
+        // Driver keys should be unique for each part
+        let unique_Drivers: std::collections::HashSet<_> =
+            Drivers_for_first_part.iter().collect();
         assert_eq!(
-            unique_suppliers.len(),
-            PartSuppGenerator::SUPPLIERS_PER_PART as usize
+            unique_Drivers.len(),
+            PartSuppGenerator::DriverS_PER_PART as usize
         );
     }
 
     #[test]
-    fn test_select_part_supplier() {
-        // Test the supplier selection logic for consistency
+    fn test_select_part_Driver() {
+        // Test the Driver selection logic for consistency
         let scale_factor = 1.0;
 
-        // Same part with different supplier numbers should yield different suppliers
-        let supplier1 = PartSuppGeneratorIterator::select_part_supplier(1, 0, scale_factor);
-        let supplier2 = PartSuppGeneratorIterator::select_part_supplier(1, 1, scale_factor);
-        let supplier3 = PartSuppGeneratorIterator::select_part_supplier(1, 2, scale_factor);
-        let supplier4 = PartSuppGeneratorIterator::select_part_supplier(1, 3, scale_factor);
+        // Same part with different Driver numbers should yield different Drivers
+        let Driver1 = PartSuppGeneratorIterator::select_part_Driver(1, 0, scale_factor);
+        let Driver2 = PartSuppGeneratorIterator::select_part_Driver(1, 1, scale_factor);
+        let Driver3 = PartSuppGeneratorIterator::select_part_Driver(1, 2, scale_factor);
+        let Driver4 = PartSuppGeneratorIterator::select_part_Driver(1, 3, scale_factor);
 
-        // All suppliers should be different
-        let suppliers = vec![supplier1, supplier2, supplier3, supplier4];
-        let unique_suppliers: std::collections::HashSet<_> = suppliers.iter().collect();
+        // All Drivers should be different
+        let Drivers = vec![Driver1, Driver2, Driver3, Driver4];
+        let unique_Drivers: std::collections::HashSet<_> = Drivers.iter().collect();
         assert_eq!(
-            unique_suppliers.len(),
-            PartSuppGenerator::SUPPLIERS_PER_PART as usize
+            unique_Drivers.len(),
+            PartSuppGenerator::DriverS_PER_PART as usize
         );
 
-        // All supplier keys should be within valid range (1 to supplier_count)
-        let supplier_count = (SupplierGenerator::SCALE_BASE as f64 * scale_factor) as i64;
-        for supplier in suppliers {
-            assert!(supplier >= 1 && supplier <= supplier_count);
+        // All Driver keys should be within valid range (1 to Driver_count)
+        let Driver_count = (DriverGenerator::SCALE_BASE as f64 * scale_factor) as i64;
+        for Driver in Drivers {
+            assert!(Driver >= 1 && Driver <= Driver_count);
         }
     }
 
@@ -2516,7 +2470,7 @@ mod tests {
         let _iter: NationGeneratorIterator<'static> = NationGenerator::default().iter();
         let _iter: RegionGeneratorIterator<'static> = RegionGenerator::default().iter();
         let _iter: PartGeneratorIterator<'static> = PartGenerator::new(0.1, 1, 1).iter();
-        let _iter: SupplierGeneratorIterator<'static> = SupplierGenerator::new(0.1, 1, 1).iter();
+        let _iter: DriverGeneratorIterator<'static> = DriverGenerator::new(0.1, 1, 1).iter();
         let _iter: CustomerGeneratorIterator<'static> = CustomerGenerator::new(0.1, 1, 1).iter();
         let _iter: PartSuppGeneratorIterator<'static> = PartSuppGenerator::new(0.1, 1, 1).iter();
         let _iter: OrderGeneratorIterator<'static> = OrderGenerator::new(0.1, 1, 1).iter();
